@@ -1,5 +1,8 @@
-package com.ozel.minibankingapp.Security;
+package com.ozel.minibankingapp.Configuration;
 
+import com.ozel.minibankingapp.Security.CustomUserDetailsService;
+import com.ozel.minibankingapp.Security.JWTAuthenticationFilter;
+import com.ozel.minibankingapp.Security.JwtAuthEntryPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,12 +19,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfiguration {
 
   private final JwtAuthEntryPoint authEntryPoint;
   private final CustomUserDetailsService userDetailsService;
   @Autowired
-  public SecurityConfig(CustomUserDetailsService userDetailsService, JwtAuthEntryPoint authEntryPoint) {
+  public SecurityConfiguration(CustomUserDetailsService userDetailsService, JwtAuthEntryPoint authEntryPoint) {
     this.userDetailsService = userDetailsService;
     this.authEntryPoint = authEntryPoint;
   }
@@ -37,7 +40,7 @@ public class SecurityConfig {
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
         .authorizeRequests()
-        .antMatchers("/api/auth/**").permitAll()
+        .antMatchers("/api/users/**", "/swagger-ui.html", "/swagger-resources/**","/swagger-ui","/swagger-ui/**","/v3/api-docs/**").permitAll()
         .anyRequest().authenticated()
         .and()
         .httpBasic();
@@ -57,7 +60,7 @@ public class SecurityConfig {
   }
 
   @Bean
-  public  JWTAuthenticationFilter jwtAuthenticationFilter() {
+  public JWTAuthenticationFilter jwtAuthenticationFilter() {
     return new JWTAuthenticationFilter();
   }
 }
