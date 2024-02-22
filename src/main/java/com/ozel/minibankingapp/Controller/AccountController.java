@@ -3,6 +3,8 @@ import com.ozel.minibankingapp.Dto.AccountRequestDto;
 import com.ozel.minibankingapp.Dto.AccountResponseDto;
 import com.ozel.minibankingapp.Dto.RetrieveAccountDto;
 import com.ozel.minibankingapp.Dto.SearchAccountDto;
+import com.ozel.minibankingapp.Exceptions.UserDoesNotExist;
+import com.ozel.minibankingapp.Exceptions.UsersAccountDoesNotExist;
 import com.ozel.minibankingapp.Service.Interface.IAccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,7 +34,8 @@ public class AccountController {
 
   @Operation(summary = "Create a account for authenticated user")
   @PostMapping
-  public ResponseEntity<AccountResponseDto> createAccount(HttpServletRequest request, @RequestBody AccountRequestDto accountRequestDto) {
+  public ResponseEntity<AccountResponseDto> createAccount(HttpServletRequest request, @RequestBody AccountRequestDto accountRequestDto)
+      throws UserDoesNotExist {
 
     AccountResponseDto accountResponseDto = accountService.createAccount(request.getRemoteUser(),
         accountRequestDto);
@@ -39,24 +43,27 @@ public class AccountController {
   }
 
   @Operation(summary = "Search accounts for authenticated user")
-  @GetMapping
-  public ResponseEntity<List<RetrieveAccountDto>> searchAccount(HttpServletRequest request, @RequestBody SearchAccountDto searchAccountDto) {
+  @GetMapping()
+  public ResponseEntity<List<RetrieveAccountDto>> searchAccount(HttpServletRequest request, @RequestParam(value = "name", required = false) String name, @RequestParam(value = "number", required = false) String number)
+      throws UserDoesNotExist {
 
     List<RetrieveAccountDto> retrieveAccountDtoList = accountService.searchAccount(request.getRemoteUser(),
-        searchAccountDto);
+        new SearchAccountDto(name, number));
     return new ResponseEntity<>(retrieveAccountDtoList, HttpStatus.OK);
   }
 
   @Operation(summary = "Update account for authenticated user")
   @PutMapping(value = "/{id}")
-  public ResponseEntity<AccountResponseDto> updateAccount(HttpServletRequest request, @PathVariable UUID id, @RequestBody AccountRequestDto accountRequestDto) {
+  public ResponseEntity<AccountResponseDto> updateAccount(HttpServletRequest request, @PathVariable UUID id, @RequestBody AccountRequestDto accountRequestDto)
+      throws UsersAccountDoesNotExist, UserDoesNotExist {
 
     AccountResponseDto updateAccountResponseDto = accountService.updateAccount(request.getRemoteUser(), accountRequestDto, id);
     return new ResponseEntity<>(updateAccountResponseDto, HttpStatus.OK);
   }
   @Operation(summary = "Delete account for authenticated user")
   @DeleteMapping(value = "/{id}")
-  public ResponseEntity<String> deleteAccount(HttpServletRequest request, @PathVariable UUID id) {
+  public ResponseEntity<String> deleteAccount(HttpServletRequest request, @PathVariable UUID id)
+      throws UsersAccountDoesNotExist, UserDoesNotExist {
 
     String response = accountService.deleteAccount(request.getRemoteUser(), id);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -64,7 +71,8 @@ public class AccountController {
 
   @Operation(summary = "Retrieves details of a specific account for authenticated user")
   @GetMapping(value = "/{id}")
-  public ResponseEntity<RetrieveAccountDto> retrieveAccount(HttpServletRequest request, @PathVariable UUID id) {
+  public ResponseEntity<RetrieveAccountDto> retrieveAccount(HttpServletRequest request, @PathVariable UUID id)
+      throws UsersAccountDoesNotExist, UserDoesNotExist {
 
     RetrieveAccountDto response = accountService.retrieveAccount(request.getRemoteUser(), id);
     return new ResponseEntity<>(response, HttpStatus.OK);

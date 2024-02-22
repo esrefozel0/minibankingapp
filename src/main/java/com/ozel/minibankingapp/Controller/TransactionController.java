@@ -1,6 +1,9 @@
 package com.ozel.minibankingapp.Controller;
 import com.ozel.minibankingapp.Dto.RetrieveTransactionDto;
 import com.ozel.minibankingapp.Dto.TransferMoneyDto;
+import com.ozel.minibankingapp.Exceptions.AccountDoesNotExist;
+import com.ozel.minibankingapp.Exceptions.UserDoesNotExist;
+import com.ozel.minibankingapp.Exceptions.UsersAccountDoesNotExist;
 import com.ozel.minibankingapp.Service.Interface.ITransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,13 +30,14 @@ public class TransactionController {
   @Operation(summary = "Transfer money one account to another account for authenticated user")
   @PostMapping("/transfer")
   public ResponseEntity<RetrieveTransactionDto> transferMoney(HttpServletRequest request, @RequestBody TransferMoneyDto transferMoneyDto)
-      throws Exception {
+      throws UserDoesNotExist, AccountDoesNotExist, UsersAccountDoesNotExist {
     return new ResponseEntity<>(transactionService.transferMoney(request.getRemoteUser(), transferMoneyDto), HttpStatus.OK);
   }
 
   @Operation(summary = "Get specific account history for authenticated user")
   @GetMapping("/account/{accountId}")
-  public ResponseEntity<List<RetrieveTransactionDto>> retrieveHistory(HttpServletRequest request, @PathVariable UUID accountId) {
+  public ResponseEntity<List<RetrieveTransactionDto>> retrieveHistory(HttpServletRequest request, @PathVariable UUID accountId)
+      throws UsersAccountDoesNotExist, UserDoesNotExist {
 
     return new ResponseEntity<>(transactionService.retrieveHistory(request.getRemoteUser(), accountId), HttpStatus.OK);
   }

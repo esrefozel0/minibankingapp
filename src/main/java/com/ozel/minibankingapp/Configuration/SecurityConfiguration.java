@@ -33,6 +33,7 @@ public class SecurityConfiguration {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf().disable()
+        .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
         .exceptionHandling()
         .authenticationEntryPoint(authEntryPoint)
         .and()
@@ -40,11 +41,9 @@ public class SecurityConfiguration {
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         .and()
         .authorizeRequests()
-        .antMatchers("/api/users/**", "/swagger-ui.html", "/swagger-resources/**","/swagger-ui","/swagger-ui/**","/v3/api-docs/**").permitAll()
-        .anyRequest().authenticated()
-        .and()
-        .httpBasic();
-    http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        .antMatchers("/swagger-ui.html", "/swagger-resources/**","/swagger-ui","/swagger-ui/**","/v3/api-docs/**", "/api/**","/api/accounts/**").permitAll()
+        .anyRequest().authenticated();
+
     return http.build();
   }
 

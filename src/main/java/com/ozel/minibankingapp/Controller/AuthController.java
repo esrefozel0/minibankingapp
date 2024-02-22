@@ -1,5 +1,6 @@
 package com.ozel.minibankingapp.Controller;
-import com.ozel.minibankingapp.Dto.LoginDto;
+import com.ozel.minibankingapp.Dto.LoginRequestDto;
+import com.ozel.minibankingapp.Dto.LoginResponseDto;
 import com.ozel.minibankingapp.Dto.RegisterDto;
 import com.ozel.minibankingapp.Service.Interface.IAuthService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,8 +22,8 @@ public class AuthController {
 
   @Operation(summary = "Login with username and password")
   @PostMapping("/login")
-  public ResponseEntity<String> login(@RequestBody LoginDto loginDto){
-    return new ResponseEntity<>(authService.login(loginDto), HttpStatus.OK);
+  public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto){
+    return new ResponseEntity<>(authService.login(loginRequestDto), HttpStatus.OK);
   }
   @Operation(summary = "Register with username, password and email")
   @PostMapping("/register")

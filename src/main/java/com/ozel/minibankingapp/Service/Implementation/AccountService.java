@@ -6,6 +6,8 @@ import com.ozel.minibankingapp.Dto.RetrieveAccountDto;
 import com.ozel.minibankingapp.Dto.SearchAccountDto;
 import com.ozel.minibankingapp.Entity.AccountEntity;
 import com.ozel.minibankingapp.Entity.UserEntity;
+import com.ozel.minibankingapp.Exceptions.UserDoesNotExist;
+import com.ozel.minibankingapp.Exceptions.UsersAccountDoesNotExist;
 import com.ozel.minibankingapp.Repository.AccountRepository;
 import com.ozel.minibankingapp.Repository.UserRepository;
 import com.ozel.minibankingapp.Service.Interface.IAccountService;
@@ -24,7 +26,8 @@ public class AccountService implements IAccountService {
   private final AccountRepository accountRepository;
 
   @Override
-  public AccountResponseDto createAccount(String username, AccountRequestDto accountRequestDto) {
+  public AccountResponseDto createAccount(String username, AccountRequestDto accountRequestDto)
+      throws UserDoesNotExist {
     UserEntity user = getUserEntity(username);
     AccountEntity account = new AccountEntity();
     account.setName(accountRequestDto.getName());
@@ -37,14 +40,15 @@ public class AccountService implements IAccountService {
 
   @Override
   public List<RetrieveAccountDto> searchAccount(String username,
-      SearchAccountDto searchAccountDto) {
+      SearchAccountDto searchAccountDto) throws UserDoesNotExist {
     UserEntity user = getUserEntity(username);
     return user.getAccountEntityList().stream().filter(acc -> acc.getName().contains(searchAccountDto.getName()) && acc.getNumber().contains(searchAccountDto.getNumber())).map(
         RetrieveAccountDto::new).toList();
   }
 
 
-  public AccountResponseDto updateAccount(String username, AccountRequestDto updateAccountRequestDto, UUID id) {
+  public AccountResponseDto updateAccount(String username, AccountRequestDto updateAccountRequestDto, UUID id)
+      throws UsersAccountDoesNotExist, UserDoesNotExist {
     AccountEntity account = getAccount(id, username);
     account.setName(updateAccountRequestDto.getName());
     accountRepository.save(account);
@@ -52,7 +56,8 @@ public class AccountService implements IAccountService {
   }
 
   @Override
-  public String deleteAccount(String username, UUID id) {
+  public String deleteAccount(String username, UUID id)
+      throws UsersAccountDoesNotExist, UserDoesNotExist {
     AccountEntity account = getAccount(id, username);
     accountRepository.delete(account);
     return id + " account deleted";
@@ -60,19 +65,21 @@ public class AccountService implements IAccountService {
 
 
   @Override
-  public RetrieveAccountDto retrieveAccount(String username, UUID id) {
+  public RetrieveAccountDto retrieveAccount(String username, UUID id)
+      throws UsersAccountDoesNotExist, UserDoesNotExist {
     AccountEntity account = getAccount(id, username);
     return new RetrieveAccountDto(account);
   }
 
-  private AccountEntity getAccount(UUID id, String username) {
+  private AccountEntity getAccount(UUID id, String username)
+      throws UsersAccountDoesNotExist, UserDoesNotExist {
     UserEntity user = this.getUserEntity(username);
     return user.getAccountEntityList().stream().filter(acc -> acc.getId().equals(
-        id)).findFirst().orElseThrow(() -> new RuntimeException("Users account not found"));
+        id)).findFirst().orElseThrow(() -> new UsersAccountDoesNotExist("Users Account Does Not Exists"));
   }
 
-  private UserEntity getUserEntity(String username) {
-    return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("User not found"));
+  private UserEntity getUserEntity(String username) throws UserDoesNotExist {
+    return userRepository.findByUsername(username).orElseThrow(() -> new UserDoesNotExist("Users Account Does Not Exists"));
   }
 
   private String generateAccountNumber(){

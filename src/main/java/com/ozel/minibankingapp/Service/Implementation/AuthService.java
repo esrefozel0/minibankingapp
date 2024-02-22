@@ -1,11 +1,13 @@
 package com.ozel.minibankingapp.Service.Implementation;
 
-import com.ozel.minibankingapp.Dto.LoginDto;
+import com.ozel.minibankingapp.Dto.LoginRequestDto;
+import com.ozel.minibankingapp.Dto.LoginResponseDto;
 import com.ozel.minibankingapp.Dto.RegisterDto;
 import com.ozel.minibankingapp.Entity.UserEntity;
 import com.ozel.minibankingapp.Repository.UserRepository;
 import com.ozel.minibankingapp.Security.JWTGenerator;
 import com.ozel.minibankingapp.Service.Interface.IAuthService;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,13 +28,15 @@ public class AuthService implements IAuthService {
   private final JWTGenerator jwtGenerator;
 
   @Override
-  public String login(LoginDto loginDto) {
+  public LoginResponseDto login(LoginRequestDto loginRequestDto) {
     Authentication authentication = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-            loginDto.getUsername(),
-            loginDto.getPassword()));
+            loginRequestDto.getUsername(),
+            loginRequestDto.getPassword()));
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    return jwtGenerator.generateToken(authentication);
+    String token = jwtGenerator.generateToken(authentication);
+    Optional<UserEntity> user =  userRepository.findByUsername(loginRequestDto.getUsername());
+    return new LoginResponseDto(user.get(), token);
   }
 
   @Override
